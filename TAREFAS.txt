@@ -1,0 +1,4 @@
+1. Limpar React
+2. Criar telas
+3. Conectar dados
+4. Deixar bonito

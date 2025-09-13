@@ -1,0 +1,25 @@
+{
+  "viagem": {
+    "titulo": "Viagem a Santiago - Família Silva",
+    "itens": [
+      {"tipo": "voo", "nome": "Voo de Ida", "status": "Confirmado"},
+      {"tipo": "transfer", "nome": "Transfer Aeroporto → Hotel", "status": "Confirmado"},
+      {"tipo": "hotel", "nome": "Hotel Santiago", "status": "Confirmado"},
+      {"tipo": "tour", "nome": "City Tour", "status": "Confirmado"}
+    ],
+    "voos": {
+      "ida": {
+        "companhia": "LATAM LA3423",
+        "origem": "VDC",
+        "destino": "SCL",
+        "data": "20 de agosto de 2024 - 10:35"
+      },
+      "volta": {
+        "companhia": "LATAM LA3422",
+        "origem": "SCL", 
+        "destino": "VDC",
+        "data": "28 de agosto de 2024 - 21:10"
+      }
+    }
+  }
+}
