@@ -1,0 +1,203 @@
+import { useState, useEffect } from 'react'
+import { supabase } from './supabase'
+
+function App() {
+  // Helper: normaliza para array (aceita array, string JSON ou null)
+  const asArray = (v) =>
+    Array.isArray(v) ? v
+    : (typeof v === 'string'
+        ? (() => { try { return JSON.parse(v) } catch { return [] } })()
+        : (v ?? []));
+  const [tela, setTela] = useState('login')
+  const [codigo, setCodigo] = useState('')
+  const [viagem, setViagem] = useState(null)
+  const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
+
+  const buscarViagem = async () => {
+    setCarregando(true)
+    setErro('')
+    
+    try {
+      const { data, error } = await supabase
+        .from('trips_v2')
+        .select('*')
+        .eq('pnr', codigo.toUpperCase())
+        .single()
+      
+      if (error) throw error
+      
+      if (data) {
+        setViagem(data)
+        setTela('home')
+      }
+    } catch (error) {
+      setErro('Código não encontrado. Tente ABC123')
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  // Função para pegar o passageiro principal
+  const getPassageiroPrincipal = (passengers) => {
+    if (!passengers || passengers.length === 0) return 'Cliente'
+    return passengers[0].name || 'Cliente'
+  }
+
+  // Função para listar todos os passageiros
+  const getTodosPassageiros = (passengers) => {
+    if (!passengers || passengers.length === 0) return []
+    return passengers.map(p => ({
+      nome: p.name,
+      tipo: p.type === 'ADT' ? 'Adulto' : p.type === 'CHD' ? 'Criança' : 'Bebê'
+    }))
+  }
+
+  if (tela === 'login') {
+    return (
+      <div style={{padding: '20px', maxWidth: '400px', margin: '0 auto'}}>
+        <div style={{backgroundColor: '#4A90E2', color: 'white', padding: '20px', marginBottom: '20px', borderRadius: '10px'}}>
+          <h1>✈️ DSC TRAVEL</h1>
+        </div>
+        
+        <div style={{backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)'}}>
+          <h2>Acessar sua viagem</h2>
+          <p>Digite o código da reserva (PNR)</p>
+          
+          <input
+            type="text"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            placeholder="Ex: ABC123"
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              border: '1px solid #ddd',
+              borderRadius: '5px',
+              marginBottom: '10px'
+            }}
+          />
+          
+            {/* Hotéis */}
+            {Array.isArray(viagem.hotels) && viagem.hotels.length > 0 && viagem.hotels.map((h, idx) => (
+              <div key={`hotel-${idx}`} style={{padding: '15px', backgroundColor: '#f0fdf4', marginBottom: '10px', borderRadius: '5px', border: '1px solid #dcfce7'}}>
+                🏨 Hotel: {h.hotel_name || '—'}
+                {(h.check_in || h.check_out) && (
+                  <div style={{fontSize: '14px', color: '#555', marginTop: '6px'}}>
+                    Check-in: {h.check_in || '—'} • Check-out: {h.check_out || '—'}
+                  </div>
+                )}
+                {h.address && (
+                  <div style={{fontSize: '14px', color: '#555', marginTop: '4px'}}>
+                    📍 {h.address}
+                  </div>
+                )}
+                {h.room_type && (
+                  <div style={{fontSize: '14px', color: '#555', marginTop: '4px'}}>
+                    🛏️ Quarto: {h.room_type}
+                  </div>
+                )}
+              </div>
+            ))}
+          <button
+            onClick={buscarViagem}
+            disabled={carregando}
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#4A90E2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              fontSize: '16px',
+              cursor: carregando ? 'wait' : 'pointer'
+            }}
+          >
+            {carregando ? 'Buscando...' : 'Acessar'}
+          </button>
+          
+          {erro && (
+            <p style={{color: 'red', marginTop: '10px', textAlign: 'center'}}>{erro}</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (tela === 'detalhes-passageiros') {
+    return (
+      <div style={{padding: '20px', maxWidth: '400px', margin: '0 auto'}}>
+        <div style={{backgroundColor: '#1e3a5f', color: 'white', padding: '20px'}}>
+          <button onClick={() => setTela('home')} style={{background: 'none', border: 'none', color: 'white', fontSize: '20px'}}>←</button>
+          <h2>Passageiros</h2>
+        </div>
+        
+        <div style={{padding: '20px', backgroundColor: 'white'}}>
+          <h3>Lista de Passageiros:</h3>
+          {getTodosPassageiros(viagem.passengers).map((passageiro, index) => (
+            <div key={index} style={{padding: '15px', backgroundColor: '#f5f5f5', marginBottom: '10px', borderRadius: '5px'}}>
+              <p><strong>{passageiro.nome}</strong></p>
+              <p>Tipo: {passageiro.tipo}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (tela === 'home' && viagem) {
+    return (
+      <div style={{padding: '20px', maxWidth: '400px', margin: '0 auto'}}>
+        <div style={{backgroundColor: '#4A90E2', color: 'white', padding: '20px', marginBottom: '20px'}}>
+          <h1>✈️ DSC TRAVEL</h1>
+        </div>
+
+        <div style={{backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)'}}>
+          <h2>Viagem de {getPassageiroPrincipal(viagem.passengers)}</h2>
+          <p>Código: {viagem.pnr}</p>
+          <p>Localizador: {viagem.locator}</p>
+          
+          <div style={{marginTop: '20px'}}>
+            <div 
+              onClick={() => setTela('detalhes-passageiros')}
+              style={{padding: '15px', backgroundColor: '#f5f5f5', marginBottom: '10px', borderRadius: '5px', cursor: 'pointer'}}
+            >
+              👥 Passageiros ({viagem.passengers?.length || 0})
+              <span style={{float: 'right', color: 'green'}}>Ver detalhes →</span>
+            </div>
+
+            {asArray(viagem.segments).map((segment, index) => (
+              <div key={index} style={{padding: '15px', backgroundColor: '#f5f5f5', marginBottom: '10px', borderRadius: '5px'}}>
+                ✈️ Voo: {segment.from_city ?? segment.origin ?? segment.origin_raw} → {(segment.to_city ?? segment.destination ?? segment.destination_raw) || 'A definir'}
+                <div style={{fontSize: '14px', color: '#555', marginTop: '6px'}}>Nº {segment.flight} • {new Date(segment.depart_at).toLocaleString('pt-BR',{ timeZone: 'UTC', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} → {new Date(segment.arrive_at).toLocaleString('pt-BR',{ timeZone: 'UTC', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} • Bagagem: {segment.baggage || '—'}</div>
+                <span style={{float: 'right', color: 'green'}}>Confirmado</span>
+              </div>
+            ))}
+          </div>
+          
+          <button
+            onClick={() => {
+              setTela('login')
+              setCodigo('')
+              setViagem(null)
+            }}
+            style={{
+              marginTop: '20px',
+              padding: '10px',
+              backgroundColor: '#666',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    )
+  }
+}
+
+export default App
