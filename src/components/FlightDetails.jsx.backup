@@ -1,0 +1,275 @@
+export default function FlightDetails({ viagem, onBack }) {
+  if (!viagem?.segments) return null
+
+  const voosIda = viagem.segments.slice(0, 2)
+  const voosVolta = viagem.segments.slice(2, 4)
+
+  const formatTime = (datetime) => {
+    if (!datetime) return '--:--'
+    // Para "2025-09-17T04:25:00Z" extrair "04:25"
+    const match = datetime.match(/T(\d{2}):(\d{2})/)
+    return match ? `${match[1]}:${match[2]}` : '--:--'
+  }
+
+  const formatDate = (datetime) => {
+    if (!datetime) return ''
+    const match = datetime.match(/2025-09-(\d{2})/)
+    if (match) {
+      const day = match[1]
+      return `${parseInt(day)} de setembro`
+    }
+    return ''
+  }
+
+  const calcDuration = (depart, arrive) => {
+    if (!depart || !arrive) return ''
+    const depTime = new Date(depart).getTime()
+    const arrTime = new Date(arrive).getTime()
+    const diff = arrTime - depTime
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return `${hours}h${minutes.toString().padStart(2, '0')}`
+  }
+
+  const calcWaitTime = (arrive1, depart2) => {
+    if (!arrive1 || !depart2) return null
+    const arr = new Date(arrive1).getTime()
+    const dep = new Date(depart2).getTime()
+    const diff = dep - arr
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return `${hours}h ${minutes}m`
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#003d82',
+      fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+      color: 'white'
+    }}>
+      <div style={{
+        maxWidth: '390px',
+        margin: '0 auto',
+        position: 'relative'
+      }}>
+        <div style={{
+          height: '200px',
+          position: 'relative',
+          backgroundImage: `url('https://images.unsplash.com/photo-1541882860-4de8a75228e8?w=800')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(to bottom, rgba(0,61,130,0.7) 0%, rgba(0,61,130,0.9) 100%)'
+          }} />
+          
+          <div style={{
+            position: 'relative',
+            padding: '50px 20px 20px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <button 
+              onClick={onBack}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                fontSize: '24px',
+                cursor: 'pointer',
+                marginRight: '20px'
+              }}
+            >
+              ←
+            </button>
+            <h1 style={{
+              margin: 0,
+              fontSize: '20px',
+              fontWeight: '600',
+              flex: 1,
+              textAlign: 'center'
+            }}>
+              Detalhes do Voo
+            </h1>
+            <div style={{ width: '44px' }} />
+          </div>
+
+          <div style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            backgroundColor: '#003d82',
+            padding: '10px 15px',
+            borderRadius: '8px'
+          }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>DSC</div>
+            <div style={{ fontSize: '12px', opacity: 0.9 }}>TRAVEL</div>
+          </div>
+        </div>
+
+        <div style={{
+          backgroundColor: 'white',
+          minHeight: 'calc(100vh - 200px)',
+          padding: '20px'
+        }}>
+          <div style={{ marginBottom: '30px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#000', marginBottom: '20px' }}>
+              IDA
+            </h2>
+
+            {voosIda.map((voo, index) => (
+              <div key={index} style={{ marginBottom: '25px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <div style={{ marginRight: '10px' }}>✈️</div>
+                    <div style={{ fontSize: '20px', fontWeight: '600', color: '#000' }}>
+                      {voo.flight}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '18px', color: '#000' }}>
+                    {formatDate(voo.depart_at)}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#000' }}>
+                      {voo.from_city}
+                    </div>
+                    <div style={{ fontSize: '24px', color: '#000', marginTop: '5px' }}>
+                      {formatTime(voo.depart_at)}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                      Econômica
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                      Duração
+                    </div>
+                    <div style={{ fontSize: '16px', color: '#000', fontWeight: '500' }}>
+                      {calcDuration(voo.depart_at, voo.arrive_at)}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#000' }}>
+                      {voo.to_city}
+                    </div>
+                    <div style={{ fontSize: '24px', color: '#000', marginTop: '5px' }}>
+                      {formatTime(voo.arrive_at)}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                      {voo.baggage}
+                    </div>
+                  </div>
+                </div>
+
+                {index === 0 && voosIda.length > 1 && (
+                  <div style={{
+                    backgroundColor: '#f5f5f5',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#666',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>🕐</span>
+                    Espera {calcWaitTime(voo.arrive_at, voosIda[1].depart_at)} em São Paulo (troca de avião)
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {voosVolta.length > 0 && (
+            <div>
+              <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#000', marginBottom: '20px' }}>
+                VOLTA
+              </h2>
+
+              {voosVolta.map((voo, index) => (
+                <div key={index} style={{ marginBottom: '25px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <div style={{ marginRight: '10px' }}>✈️</div>
+                      <div style={{ fontSize: '20px', fontWeight: '600', color: '#000' }}>
+                        {voo.flight}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '18px', color: '#000' }}>
+                      24 de setembro
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#000' }}>
+                        {voo.from_city}
+                      </div>
+                      <div style={{ fontSize: '24px', color: '#000', marginTop: '5px' }}>
+                        {formatTime(voo.depart_at)}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                        Econômica
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center', flex: 1 }}>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                        Duração
+                      </div>
+                      <div style={{ fontSize: '16px', color: '#000', fontWeight: '500' }}>
+                        {calcDuration(voo.depart_at, voo.arrive_at)}
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#000' }}>
+                        {voo.to_city}
+                      </div>
+                      <div style={{ fontSize: '24px', color: '#000', marginTop: '5px' }}>
+                        {formatTime(voo.arrive_at)}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                        {voo.baggage}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ fontSize: '14px', color: '#666', marginTop: '20px', textAlign: 'center' }}>
+                Localizador: {viagem.locator}
+              </div>
+            </div>
+          )}
+
+          <button style={{
+            width: '100%',
+            padding: '16px',
+            backgroundColor: '#50CFAD',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '16px',
+            fontWeight: '600',
+            marginTop: '30px',
+            cursor: 'pointer'
+          }}>
+            Baixar Voucher Original
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

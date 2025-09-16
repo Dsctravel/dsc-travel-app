@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from './services/supabase'
 import { fmt } from './utils/formatters'
 import Header from './components/Header'
@@ -7,17 +7,17 @@ import ProductCards from './components/ProductCards'
 import HotelCard from './components/HotelCard'
 import TransferCard from './components/TransferCard'
 import InsuranceCard from './components/InsuranceCard'
-import ModernHome from './components/ModernHome'
-import FlightDetails from './components/FlightDetails'
+import FlightDetails from "./components/FlightDetails"
+import ModernHome from "./components/ModernHome"
 
 export default function App() {
   const [tela, setTela] = useState('login')
   const [codigo, setCodigo] = useState('')
   const [viagem, setViagem] = useState(null)
   const [erro, setErro] = useState('')
+  const [telaDetalhe, setTelaDetalhe] = useState(null)
   const [carregando, setCarregando] = useState(false)
   const [expandido, setExpandido] = useState(null)
-  const [telaDetalhe, setTelaDetalhe] = useState(null)
 
   const buscarViagem = async () => {
     setCarregando(true)
@@ -34,13 +34,17 @@ export default function App() {
         setViagem(data)
         setTela('home')
         setExpandido(null)
-        setTelaDetalhe(null)
       }
     } catch (e) {
       setErro('Código não encontrado')
     } finally {
       setCarregando(false)
     }
+  }
+
+  const getPassageiroPrincipal = (passengers) => {
+    if (!passengers || passengers.length === 0) return 'Cliente'
+    return passengers[0].name || 'Cliente'
   }
 
   const getTodosPassageiros = (passengers) => {
@@ -175,8 +179,8 @@ export default function App() {
     )
   }
 
-  // Tela de detalhes de voos
-  if (telaDetalhe === 'voos') {
+  // Usar a nova home moderna
+  if (telaDetalhe === "voos") {
     return (
       <FlightDetails
         viagem={viagem}
@@ -184,22 +188,110 @@ export default function App() {
       />
     )
   }
-
-  // Usar a nova home moderna
-  if (tela === 'home') {
+  if (tela === "home") {
     return (
-      <ModernHome 
+      <ModernHome
         viagem={viagem}
         onOpenDetails={(tipo) => setTelaDetalhe(tipo)}
         onLogout={() => {
-          setTela('login')
-          setCodigo('')
+          setTela("login")
+          setCodigo("")
           setViagem(null)
         }}
       />
     )
   }
 
-  // Fallback - não deve chegar aqui
-  return null
+  // Tela Home antiga
+  const { origem, destino } = getOrigemDestino()
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+      <Header origem={origem} destino={destino} />
+
+      <div style={{
+        backgroundColor: 'white',
+        padding: '20px',
+        borderRadius: '10px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+      }}>
+        <h2>Viagem de {getPassageiroPrincipal(viagem.passengers)}</h2>
+        <p>Código: {viagem.pnr}</p>
+        <p>Localizador: {viagem.locator}</p>
+
+        <div
+          onClick={() => setTela('detalhes-passageiros')}
+          style={{
+            padding: '15px',
+            backgroundColor: '#f5f5f5',
+            marginBottom: '10px',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          👥 Passageiros ({viagem.passengers?.length || 0})
+          <span style={{ float: 'right', color: 'green' }}>Ver detalhes →</span>
+        </div>
+
+        <ProductCards viagem={viagem} expandido={expandido} setExpandido={setExpandido} />
+
+        {/* Área de detalhes expandidos */}
+        {expandido === 'hotel' && viagem.hotels && (
+          <div style={{ marginTop: '15px' }}>
+            {viagem.hotels.map((hotel, index) => (
+              <HotelCard key={index} hotel={hotel} />
+            ))}
+          </div>
+        )}
+
+        {expandido === 'transfer' && viagem.transfers && (
+          <div style={{ marginTop: '15px' }}>
+            {viagem.transfers.map((transfer, index) => (
+              <TransferCard key={index} transfer={transfer} />
+            ))}
+          </div>
+        )}
+
+        {expandido === 'seguro' && viagem.insurance && (
+          <div style={{ marginTop: '15px' }}>
+            {viagem.insurance.map((ins, index) => (
+              <InsuranceCard key={index} insurance={ins} />
+            ))}
+          </div>
+        )}
+
+        {/* Voos sempre visíveis */}
+        <h3 style={{ marginTop: '20px' }}>Voos</h3>
+        {viagem.segments && viagem.segments.map((segment, index) => (
+          <FlightCard key={index} segment={segment} />
+        ))}
+      </div>
+
+      <button
+        onClick={() => {
+          setTela('login')
+          setCodigo('')
+          setViagem(null)
+        }}
+        style={{
+          marginTop: '20px',
+          padding: '10px',
+          backgroundColor: '#764ba2',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}
+      >
+        Sair
+      </button>
+    </div>
+  )
 }
+
+  // Adicionar após o const [telaDetalhe, setTelaDetalhe] = useState(null)
+  React.useEffect(() => {
+    const handleOpenFlightDetails = () => setTelaDetalhe('voos')
+    window.addEventListener('openFlightDetails', handleOpenFlightDetails)
+    return () => window.removeEventListener('openFlightDetails', handleOpenFlightDetails)
+  }, [])
