@@ -7,7 +7,7 @@ import {
   hasTransfer,
   hasCityTour,
   hasInsurance
-} from '../utils/formatters'
+} from '@utils/formatters'
 import { useState } from 'react'
 
 export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} }) {
@@ -23,15 +23,20 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
   const temCityTour = hasCityTour(viagem);
   const temSeguro = hasInsurance(viagem);
 
+  const nomeFamilia = nomePassageiro;
+
   // Sistema de imagens dinâmicas por destino
   const getDestinationImage = (destination) => {
     const imageMap = {
+      // Códigos de aeroporto
       'GYN': '/images/goiania_1200x600.jpg',
       'SCL': '/images/santiago_1200x600.jpg',
       'GRU': '/images/sao_paulo_1200x600.jpg',
       'VDC': '/images/aviao_asa_1200x600.jpg',
       'SSA': '/images/salvador_1200x600.jpg',
       'CNF': '/images/belo_horizonte_1200x600.jpg',
+      
+      // Nomes de cidades  
       'Goiânia': '/images/goiania_1200x600.jpg',
       'Santiago': '/images/santiago_1200x600.jpg',
       'São Paulo': '/images/sao_paulo_1200x600.jpg',
@@ -49,7 +54,7 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#f0f2f5',
-      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, sans-serif'
     }}>
       <div style={{
         maxWidth: '390px',
@@ -60,7 +65,7 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
         boxShadow: '0 0 40px rgba(0,0,0,0.1)'
       }}>
         <div style={{
-          height: '300px',
+          height: '380px',
           position: 'relative',
           backgroundImage: `url('${cityImage}')`,
           backgroundSize: 'cover',
@@ -72,27 +77,27 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%)'
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)'
           }} />
           
           <div style={{
             position: 'relative',
-            padding: '40px 24px 24px',
+            padding: '50px 20px 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
             <div style={{
               color: 'white',
-              fontSize: '20px',
-              fontWeight: '700',
+              fontSize: '24px',
+              fontWeight: '600',
               letterSpacing: '1px'
             }}>
               DSC
             </div>
             <div style={{
-              width: '32px',
-              height: '32px',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
               backgroundColor: 'rgba(255,255,255,0.9)',
               display: 'flex',
@@ -105,39 +110,33 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
         </div>
 
         <div style={{
-          margin: '-80px 24px 24px',
+          margin: '-120px 20px 20px',
           backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: '32px 24px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
           position: 'relative'
         }}>
           <h1 style={{
-            fontSize: '24px',
+            fontSize: '32px',
             fontWeight: '700',
             marginBottom: '8px',
-            color: '#09077d',
-            fontFamily: 'serif',
-            lineHeight: '1.2'
+            color: '#1a1a1a'
           }}>
             Viagem a {destino}
           </h1>
-          
           <p style={{
-            fontSize: '14px',
-            color: '#09077d',
-            fontWeight: '600',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            marginBottom: '24px'
+            fontSize: '18px',
+            color: '#666',
+            marginBottom: '32px'
           }}>
-            {nomePassageiro}
+            {nomeFamilia}
           </p>
 
           <div style={{ marginBottom: '32px' }}>
             <p style={{
-              fontSize: '11px',
-              color: '#50cfad',
+              fontSize: '13px',
+              color: '#999',
               textTransform: 'uppercase',
               letterSpacing: '1px',
               marginBottom: '16px',
@@ -152,25 +151,31 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '16px 20px',
-                  backgroundColor: '#f8fffe',
+                  padding: '16px',
+                  backgroundColor: '#f8f9fa',
                   borderRadius: '12px',
                   gap: '16px',
-                  cursor: 'pointer',
-                  border: '1px solid #e8f5f3'
+                  cursor: 'pointer'
                 }}
               >
                 <div style={{
-                  fontSize: '20px',
-                  color: '#50cfad'
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '12px',
+                  backgroundColor: '#e8f0ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundImage: 'url(https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=100)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
                 }}>
-                  ✈️
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
                     fontSize: '16px',
                     fontWeight: '600',
-                    color: '#333',
+                    color: '#1a1a1a',
                     marginBottom: '4px'
                   }}>
                     Voo de Ida
@@ -183,10 +188,10 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
                   </div>
                 </div>
                 <div style={{
-                  backgroundColor: '#50cfad',
+                  backgroundColor: '#50CFAD',
                   color: 'white',
-                  padding: '4px 12px',
-                  borderRadius: '16px',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
                   fontSize: '12px',
                   fontWeight: '600'
                 }}>
@@ -197,13 +202,24 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: '16px 20px',
+                padding: '16px',
                 backgroundColor: '#f8f9fa',
                 borderRadius: '12px',
                 gap: '16px',
                 opacity: 0.6
               }}>
-                <div style={{ fontSize: '20px', color: '#999' }}>✈️</div>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '12px',
+                  backgroundColor: '#e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px'
+                }}>
+                  ✈️
+                </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
                     fontSize: '16px',
@@ -224,181 +240,206 @@ export default function ModernHome({ viagem, onLogout, onOpenDetails = () => {} 
             )}
           </div>
 
-          {/* Timeline dos produtos */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', paddingLeft: '8px' }}>
             <div style={{
               position: 'absolute',
-              left: '10px',
-              top: '20px',
-              bottom: '20px',
+              left: '8px',
+              top: '24px',
+              bottom: '24px',
               width: '2px',
-              backgroundColor: '#e8f5f3'
+              backgroundColor: '#e0e0e0'
             }} />
 
-            {/* Transfer */}
             <div style={{
               display: 'flex',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               marginBottom: '24px',
-              position: 'relative'
+              position: 'relative',
+              opacity: temHotel ? 1 : 0.4
             }}>
               <div style={{
-                width: '20px',
-                height: '20px',
+                width: '16px',
+                height: '16px',
                 borderRadius: '50%',
-                backgroundColor: temTransfer ? '#50cfad' : '#e0e0e0',
+                backgroundColor: temHotel ? '#50CFAD' : '#e0e0e0',
+                position: 'absolute',
+                left: '0',
+                zIndex: 1
+              }} />
+              <div style={{
+                marginLeft: '36px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 1,
-                marginRight: '16px'
+                width: '100%',
+                gap: '12px'
               }}>
-                <div style={{ fontSize: '10px', color: 'white' }}>🚖</div>
-              </div>
-              <div style={{ flex: 1, paddingTop: '2px' }}>
-                <div style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: temTransfer ? '#333' : '#999',
-                  marginBottom: '4px'
-                }}>
-                  Transfer Aeroporto → Hotel
+                <div style={{ fontSize: '20px' }}>🏨</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: temHotel ? '#1a1a1a' : '#999'
+                  }}>
+                    Hotel {destino}
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#999',
+                    marginTop: '2px'
+                  }}>
+                    {temHotel ? `Check-in ${dataProximoVoo}` : 'A definir'}
+                  </div>
                 </div>
                 <div style={{
-                  fontSize: '14px',
-                  color: '#666'
+                  fontSize: '11px',
+                  color: '#999',
+                  fontWeight: '600'
                 }}>
-                  {temTransfer ? dataProximoVoo : '24 de setembro'}
+                  {temHotel ? 'CHECK-IN' : 'A DEFINIR'}
                 </div>
               </div>
             </div>
 
-            {/* Hotel */}
             <div style={{
               display: 'flex',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               marginBottom: '24px',
-              position: 'relative'
+              position: 'relative',
+              opacity: temTransfer ? 1 : 0.4
             }}>
               <div style={{
-                width: '20px',
-                height: '20px',
+                width: '16px',
+                height: '16px',
                 borderRadius: '50%',
-                backgroundColor: temHotel ? '#50cfad' : '#e0e0e0',
+                backgroundColor: temTransfer ? '#50CFAD' : '#e0e0e0',
+                position: 'absolute',
+                left: '0',
+                zIndex: 1
+              }} />
+              <div style={{
+                marginLeft: '36px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 1,
-                marginRight: '16px'
+                width: '100%',
+                gap: '12px'
               }}>
-                <div style={{ fontSize: '10px', color: 'white' }}>🏨</div>
-              </div>
-              <div style={{ flex: 1, paddingTop: '2px' }}>
-                <div style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: temHotel ? '#333' : '#999',
-                  marginBottom: '4px'
-                }}>
-                  Hotel {destino}
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#666'
-                }}>
-                  {temHotel ? `Check-in ${dataProximoVoo}` : 'Check-in 24 de setembro'}
+                <div style={{ fontSize: '20px' }}>🚗</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: temTransfer ? '#1a1a1a' : '#999'
+                  }}>
+                    Transfer Aeroporto → Hotel
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#999',
+                    marginTop: '2px'
+                  }}>
+                    {temTransfer ? dataProximoVoo : 'A definir'}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Passeio */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              marginBottom: '24px',
-              position: 'relative'
-            }}>
+            {(temCityTour || temTransfer) && (
               <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: temCityTour ? '#50cfad' : '#e0e0e0',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                marginBottom: '24px',
                 position: 'relative',
-                zIndex: 1,
-                marginRight: '16px'
+                opacity: temCityTour ? 1 : 0.4
               }}>
-                <div style={{ fontSize: '10px', color: 'white' }}>🏛️</div>
-              </div>
-              <div style={{ flex: 1, paddingTop: '2px' }}>
                 <div style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: temCityTour ? '#333' : '#999',
-                  marginBottom: '4px'
-                }}>
-                  Passeio pela cidade
-                </div>
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: temCityTour ? '#50CFAD' : '#e0e0e0',
+                  position: 'absolute',
+                  left: '0',
+                  zIndex: 1
+                }} />
                 <div style={{
-                  fontSize: '14px',
-                  color: '#666'
+                  marginLeft: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  gap: '12px'
                 }}>
-                  {temCityTour ? 'Incluído' : 'A definir'}
+                  <div style={{ fontSize: '20px' }}>🎫</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      color: temCityTour ? '#1a1a1a' : '#999'
+                    }}>
+                      Passeio pela cidade
+                    </div>
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#999',
+                      marginTop: '2px'
+                    }}>
+                      {temCityTour ? 'Incluído' : 'A definir'}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Seguro */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              marginBottom: '8px',
-              position: 'relative'
-            }}>
+            {temSeguro && (
               <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: temSeguro ? '#50cfad' : '#e0e0e0',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 1,
-                marginRight: '16px'
+                marginBottom: '24px',
+                position: 'relative'
               }}>
-                <div style={{ fontSize: '10px', color: 'white' }}>🛡️</div>
-              </div>
-              <div style={{ flex: 1, paddingTop: '2px' }}>
                 <div style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: temSeguro ? '#333' : '#999',
-                  marginBottom: '4px'
-                }}>
-                  Seguro Viagem
-                </div>
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: '#50CFAD',
+                  position: 'absolute',
+                  left: '0',
+                  zIndex: 1
+                }} />
                 <div style={{
-                  fontSize: '14px',
-                  color: '#666'
+                  marginLeft: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  gap: '12px'
                 }}>
-                  {temSeguro ? 'Ativo' : 'A definir'}
+                  <div style={{ fontSize: '20px' }}>🛡️</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      color: '#1a1a1a'
+                    }}>
+                      Seguro Viagem
+                    </div>
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#999',
+                      marginTop: '2px'
+                    }}>
+                      Ativo
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        <div style={{ padding: '0 24px 24px' }}>
+        <div style={{ padding: '0 20px 20px' }}>
           <button
             onClick={onLogout}
             style={{
               width: '100%',
-              padding: '16px',
+              padding: '14px',
               backgroundColor: '#f0f0f0',
               border: 'none',
               borderRadius: '12px',

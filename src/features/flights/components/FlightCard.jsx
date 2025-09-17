@@ -1,4 +1,4 @@
-import { fmt } from '../utils/formatters'
+import { fmt } from "@utils/formatters";
 
 export default function FlightCard({ segment }) {
   return (

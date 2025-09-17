@@ -1,4 +1,4 @@
-import { getValidSegments, formatTime, formatDate } from '../utils/formatters'
+import { getValidSegments, formatTime, formatDate } from '@utils/formatters'
 import { useState } from 'react'
 
 export default function FlightDetails({ viagem, onBack }) {

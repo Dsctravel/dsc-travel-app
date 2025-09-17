@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './services/supabase'
-import { fmt } from './utils/formatters'
-import Header from './components/Header'
-import FlightCard from './components/FlightCard'
-import ProductCards from './components/ProductCards'
-import HotelCard from './components/HotelCard'
-import TransferCard from './components/TransferCard'
-import InsuranceCard from './components/InsuranceCard'
-import ModernHome from './components/ModernHome'
-import FlightDetails from './components/FlightDetails'
+import { fmt } from './shared/utils/formatters'
+import Header from "./shared/components/Header"
+import FlightCard from "./features/flights/components/FlightCard"
+import ProductCards from "./shared/components/ProductCards"
+import HotelCard from './shared/components/HotelCard'
+import TransferCard from './shared/components/TransferCard'
+import InsuranceCard from './shared/components/InsuranceCard'
+import ModernHome from './features/travel/components/ModernHome'
+import FlightDetails from './features/flights/components/FlightDetails'
 
 export default function App() {
   const [tela, setTela] = useState('login')
@@ -55,151 +55,171 @@ export default function App() {
     if (!viagem?.segments || viagem.segments.length === 0) {
       return { origem: '---', destino: '---' }
     }
+
+    const firstSegment = viagem.segments[0]
+    const lastSegment = viagem.segments[viagem.segments.length - 1]
     
-    const origem = viagem.segments[0].from_city || '---'
-    const cidadesDestino = {}
-    viagem.segments.forEach(s => {
-      if (s.to_city && s.to_city !== origem) {
-        cidadesDestino[s.to_city] = (cidadesDestino[s.to_city] || 0) + 1
-      }
-    })
-    
-    let destino = origem
-    let maxVisitas = 0
-    for (const [cidade, visitas] of Object.entries(cidadesDestino)) {
-      if (visitas > maxVisitas) {
-        destino = cidade
-        maxVisitas = visitas
-      }
+    return {
+      origem: firstSegment?.from_city || '---',
+      destino: lastSegment?.to_city || '---',
     }
-    
-    return { origem, destino }
   }
 
   if (tela === 'login') {
     return (
-      <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f0f2f5',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
         <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          padding: '20px',
-          marginBottom: '20px',
-          borderRadius: '10px',
-        }}>
-          <h1>✈️ DSC TRAVEL</h1>
-        </div>
-
-        <div style={{
+          width: '100%',
+          maxWidth: '400px',
+          padding: '32px',
           backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '10px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          margin: '16px'
         }}>
-          <h2>Acessar sua viagem</h2>
-          <p>Digite o código da reserva (PNR)</p>
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '32px'
+          }}>
+            <h1 style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              color: '#1a1a1a',
+              marginBottom: '8px'
+            }}>
+              DSC Travel
+            </h1>
+            <p style={{
+              color: '#666',
+              fontSize: '16px'
+            }}>
+              Digite seu código de reserva
+            </p>
+          </div>
 
           <input
             type="text"
+            placeholder="Código da reserva (ex: ABC123)"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
-            placeholder="Ex: QNXECK"
             style={{
               width: '100%',
-              padding: '10px',
+              padding: '16px',
               fontSize: '16px',
-              border: '1px solid #ddd',
-              borderRadius: '5px',
-              marginBottom: '10px',
+              border: '2px solid #e0e0e0',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              outline: 'none',
+              transition: 'border-color 0.3s',
+              textTransform: 'uppercase'
             }}
+            onFocus={(e) => e.target.style.borderColor = '#007bff'}
+            onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
           />
+
+          {erro && (
+            <div style={{
+              color: '#dc3545',
+              fontSize: '14px',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              {erro}
+            </div>
+          )}
 
           <button
             onClick={buscarViagem}
-            disabled={carregando}
+            disabled={carregando || !codigo}
             style={{
               width: '100%',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
+              padding: '16px',
               fontSize: '16px',
-              cursor: carregando ? 'wait' : 'pointer',
+              fontWeight: '600',
+              color: 'white',
+              backgroundColor: carregando || !codigo ? '#ccc' : '#007bff',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: carregando || !codigo ? 'not-allowed' : 'pointer',
+              transition: 'background-color 0.3s'
             }}
           >
-            {carregando ? 'Buscando...' : 'Acessar'}
+            {carregando ? 'Buscando...' : 'Acessar Viagem'}
           </button>
-
-          {erro && (
-            <p style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
-              {erro}
-            </p>
-          )}
         </div>
       </div>
     )
   }
 
-  if (tela === 'detalhes-passageiros') {
-    return (
-      <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-        <div style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-          color: 'white', 
-          padding: '20px' 
-        }}>
-          <button
-            onClick={() => setTela('home')}
-            style={{ background: 'none', border: 'none', color: 'white', fontSize: '20px' }}
-          >
-            ←
-          </button>
-          <h2>Passageiros</h2>
-        </div>
-
-        <div style={{ padding: '20px', backgroundColor: 'white' }}>
-          <h3>Lista de Passageiros:</h3>
-          {getTodosPassageiros(viagem.passengers).map((passageiro, index) => (
-            <div key={index} style={{
-              padding: '15px',
-              backgroundColor: '#f5f5f5',
-              marginBottom: '10px',
-              borderRadius: '5px',
-            }}>
-              <p><strong>{passageiro.nome}</strong></p>
-              <p>Tipo: {passageiro.tipo}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  // Tela de detalhes de voos
-  if (telaDetalhe === 'voos') {
-    return (
-      <FlightDetails
-        viagem={viagem}
-        onBack={() => setTelaDetalhe(null)}
-      />
-    )
-  }
-
-  // Usar a nova home moderna
   if (tela === 'home') {
     return (
-      <ModernHome 
+      <ModernHome
         viagem={viagem}
-        onOpenDetails={(tipo) => setTelaDetalhe(tipo)}
         onLogout={() => {
           setTela('login')
           setCodigo('')
           setViagem(null)
+          setErro('')
+        }}
+        onOpenDetails={(secao) => {
+          setTelaDetalhe(secao)
+          setTela('detalhes')
         }}
       />
     )
   }
 
-  // Fallback - não deve chegar aqui
+  if (tela === 'detalhes') {
+    if (telaDetalhe === 'voos') {
+      return (
+        <FlightDetails
+          viagem={viagem}
+          onBack={() => setTela('home')}
+        />
+      )
+    }
+
+    // Outras páginas de detalhes serão implementadas aqui
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f0f2f5',
+        padding: '20px'
+      }}>
+        <button
+          onClick={() => setTela('home')}
+          style={{
+            marginBottom: '20px',
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          ← Voltar
+        </button>
+        
+        <div style={{
+          backgroundColor: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <h2>Seção: {telaDetalhe}</h2>
+          <p>Página em desenvolvimento</p>
+        </div>
+      </div>
+    )
+  }
+
   return null
 }
