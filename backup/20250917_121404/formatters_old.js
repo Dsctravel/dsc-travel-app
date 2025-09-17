@@ -71,32 +71,6 @@ export const getValidSegments = (segments) => {
   );
 };
 
-export const getFinalDestination = (segments) => {
-  if (!segments || !Array.isArray(segments)) return 'Destino';
-  
-  const validSegments = getValidSegments(segments);
-  if (validSegments.length === 0) return 'Destino';
-  
-  const sortedSegments = [...validSegments].sort((a, b) => 
-    new Date(a.depart_at) - new Date(b.depart_at)
-  );
-  
-  const now = new Date();
-  const lastFlight = sortedSegments[sortedSegments.length - 1];
-  const finalArrival = new Date(lastFlight.arrive_at);
-  
-  // Se a viagem completa já terminou, mostrar destino final onde chegou
-  if (now > finalArrival) {
-    const finalCode = lastFlight.to_city;
-    return mapCityCode(finalCode);
-  }
-  
-  // Se ainda está na viagem ou não começou, mostrar destino da ida
-  const midPoint = Math.ceil(sortedSegments.length / 2);
-  const outboundDestination = sortedSegments[midPoint - 1].to_city;
-  return mapCityCode(outboundDestination);
-};
-
 const mapCityCode = (code) => {
   const cityMap = {
     'GYN': 'Goiânia',
@@ -110,12 +84,109 @@ const mapCityCode = (code) => {
   return cityMap[code] || code;
 };
 
+// Converter segment para formato de leg
+const segmentToLeg = (segment) => ({
+  depAirport: segment.from_city,
+  arrAirport: segment.to_city,
+  depUtc: segment.depart_at,
+  arrUtc: segment.arrive_at,
+  flight: segment.flight
+});
+
+const toMs = (isoString) => new Date(isoString).getTime();
+
+// Construir trajetos (journeys) agrupando pernas por conexões
+const buildJourneys = (legs, stopoverMs = 24 * 60 * 60 * 1000) => {
+  const ordered = [...legs].sort((a, b) => toMs(a.depUtc) - toMs(b.depUtc));
+  const journeys = [];
+  let current = [];
+
+  for (let i = 0; i < ordered.length; i++) {
+    const leg = ordered[i];
+    
+    if (current.length === 0) {
+      current.push(leg);
+      continue;
+    }
+
+    const prev = current[current.length - 1];
+    const isSameAirportChain = prev.arrAirport === leg.depAirport;
+    const gapMs = toMs(leg.depUtc) - toMs(prev.arrUtc);
+    const isConnection = isSameAirportChain && gapMs <= stopoverMs;
+
+    if (isConnection) {
+      current.push(leg);
+    } else {
+      journeys.push({ legs: current });
+      current = [leg];
+    }
+  }
+
+  if (current.length) journeys.push({ legs: current });
+  return journeys;
+};
+
+// Status de uma perna em relação ao momento atual
+const legStatus = (leg, nowMs) => {
+  const dep = toMs(leg.depUtc);
+  const arr = toMs(leg.arrUtc);
+  
+  if (nowMs >= arr) return 'completed';
+  if (nowMs >= dep && nowMs < arr) return 'in_progress';
+  return 'upcoming';
+};
+
+// Encontrar trajeto atual baseado no tempo
+const getCurrentJourney = (journeys, now = new Date()) => {
+  const nowMs = now.getTime();
+
+  // 1. Se há perna em progresso, esse é o trajeto atual
+  for (const journey of journeys) {
+    if (journey.legs.some(leg => legStatus(leg, nowMs) === 'in_progress')) {
+      return journey;
+    }
+  }
+
+  // 2. Primeiro trajeto com perna futura
+  for (const journey of journeys) {
+    if (journey.legs.some(leg => legStatus(leg, nowMs) === 'upcoming')) {
+      return journey;
+    }
+  }
+
+  // 3. Todos concluídos - último trajeto
+  return journeys[journeys.length - 1] || null;
+};
+
+export const getFinalDestination = (segments) => {
+  if (!segments || !Array.isArray(segments)) return 'Destino';
+  
+  const validSegments = getValidSegments(segments);
+  if (validSegments.length === 0) return 'Destino';
+  
+  // Converter segments para legs
+  const legs = validSegments.map(segmentToLeg);
+  
+  // Construir trajetos
+  const journeys = buildJourneys(legs);
+  if (journeys.length === 0) return 'Destino';
+  
+  // Encontrar trajeto atual
+  const currentJourney = getCurrentJourney(journeys);
+  if (!currentJourney) return 'Destino';
+  
+  // Destino final é o último aeroporto do trajeto atual
+  const lastLeg = currentJourney.legs[currentJourney.legs.length - 1];
+  return mapCityCode(lastLeg.arrAirport);
+};
+
 export const getNextFlight = (segments) => {
   const validSegments = getValidSegments(segments);
   if (validSegments.length === 0) return null;
   
   const now = new Date();
   
+  // Encontrar próximo voo que ainda não partiu
   const upcomingFlight = validSegments.find(segment => {
     const departureDate = new Date(segment.depart_at);
     return departureDate > now;
